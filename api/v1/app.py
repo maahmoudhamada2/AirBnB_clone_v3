@@ -15,6 +15,12 @@ def resetDB(self):
     storage.close()
 
 
+@app.errorhandler(404)
+def custom_404(e):
+    """Method to return custom_404 message"""
+    return '{"error": "Not found"}', 404
+
+
 app.register_blueprint(app_views)
 
 
