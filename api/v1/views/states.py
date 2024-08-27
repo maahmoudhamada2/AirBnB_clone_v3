@@ -19,7 +19,7 @@ def bodyChecker(method):
     else:
         if not request.is_json:
             return 'Not a Json'
-        if not request.get_json() or not isinstance(request.get_json(), dict)
+        if not request.get_json() or not isinstance(request.get_json(), dict):
             return 'Not a JSON'
         else:
             return None
