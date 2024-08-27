@@ -5,17 +5,6 @@ from models.state import State
 from api.v1.views import app_views
 from flask import abort, request, jsonify
 
-# -------------------------------------------------------------------------------
-
-
-def bodyChecker(data):
-    """Method to check HTTP body response"""
-    if not isinstance(data, dict):
-        return "Not a JSON"
-    elif 'name' not in data:
-        return "Missing name"
-    else:
-        return None
 
 # -------------------------------------------------------------------------------
 
@@ -23,15 +12,19 @@ def bodyChecker(data):
 @app_views.route('/states', strict_slashes=False, methods=['GET', 'POST'])
 def get_states():
     """Routing method to list states objs"""
+
     objs, objList = storage.all(State), []
+
     if request.method == 'POST':
-        data = request.get_json()
-        mssg = bodyChecker(data)
-        if mssg:
-            return jsonify(mssg), 400
+        if not request.is_json:
+            return 'Not a JSON', 400
+        if not request.get_json():
+            return "Not a JSON", 400
+        elif 'name' not in request.get_json():
+            return "Missing name", 400
         else:
             s = State()
-            for key, value in data.items():
+            for key, value in request.get_json().items():
                 setattr(s, key, value)
             s.save()
             return s.to_dict(), 201
@@ -53,20 +46,25 @@ def single_state(state_id):
 
     if key not in objs:
         abort(404)
+
     elif request.method == 'DELETE':
         storage.delete(objs.get(key))
         storage.save()
         return {}, 200
+
     elif request.method == 'PUT':
-        data = request.get_json()
-        bodyChecker(data)
-        obj = objs.get(key)
-        for key, value in data.items():
-            if key in skipKeys:
-                continue
-            else:
-                setattr(obj, key, value)
-        obj.save()
-        return obj.to_dict(), 200
+        if not request.is_json:
+            return "Not a JSON", 400
+        elif not request.get_json():
+            return "Not a JSON", 400
+        else:
+            obj = objs.get(key)
+            for key, value in request.get_json().items():
+                if key in skipKeys:
+                    continue
+                else:
+                    setattr(obj, key, value)
+            obj.save()
+            return obj.to_dict(), 200
     else:
         return objs.get(key).to_dict()
