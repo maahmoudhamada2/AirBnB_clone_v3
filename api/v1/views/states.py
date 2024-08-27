@@ -7,6 +7,7 @@ from flask import abort, request, jsonify
 
 
 def bodyChecker(method):
+    """Function to check http body request"""
     if method == 'POST':
         if not request.is_json:
             return 'Not a JSON'
