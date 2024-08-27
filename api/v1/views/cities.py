@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """Cities routing"""
-from api.v1.views import app_views
+from api.v1.views import app_views, bodyChecker
 from models.state import State
 from models.city import City
 from models import storage
@@ -21,10 +21,12 @@ def get_cities(state_id):
         return objsList
 
 
-@app_views.route('/cities/<city_id>', methods=['GET', 'DELETE'])
+@app_views.route('/cities/<city_id>', methods=['GET', 'DELETE', 'PUT'])
 def get_city(city_id):
     """Routing method to get a city using id"""
+
     key = "{}.{}".format(City.__name__, city_id)
+    skipKeys = ['id', 'state_id', 'updated_at', 'created_at']
 
     if key not in storage.all(City):
         abort(404)
@@ -32,5 +34,18 @@ def get_city(city_id):
         storage.delete(storage.get(City, city_id))
         storage.save()
         return {}, 200
+    elif request.method == 'PUT':
+        mssg = bodyChecker(request.method)
+        if mssg:
+            return mssg, 400
+        else:
+            city = storage.get(City, city_id)
+            for key, value in request.get_json().items():
+                if key in skipKeys:
+                    continue
+                else:
+                    setattr(city, key, value)
+            city.save()
+            return city.to_dict(), 200
     else:
         return storage.get(City, city_id).to_dict()
