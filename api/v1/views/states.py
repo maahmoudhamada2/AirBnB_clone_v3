@@ -6,15 +6,24 @@ from api.v1.views import app_views
 from flask import abort, request, jsonify
 
 
-def bodyChecker():
-    if not request.is_json:
-        return 'Not a JSON'
-    if not request.get_json() or not isinstance(request.get_json(), dict):
-        return 'Not a JSON'
-    elif 'name' not in request.get_json():
-        return 'Missing name'
+def bodyChecker(method):
+    if method == 'POST':
+        if not request.is_json:
+            return 'Not a JSON'
+        if not request.get_json() or not isinstance(request.get_json(), dict):
+            return 'Not a JSON'
+        elif 'name' not in request.get_json():
+            return 'Missing name'
+        else:
+            return None
     else:
-        return None
+        if not request.is_json:
+            return 'Not a Json'
+        if not request.get_json() or not isinstance(request.get_json(), dict)
+            return 'Not a JSON'
+        else:
+            return None
+
 # -------------------------------------------------------------------------------
 
 
@@ -25,7 +34,7 @@ def get_states():
     objs, objList = storage.all(State), []
 
     if request.method == 'POST':
-        mssg = bodyChecker()
+        mssg = bodyChecker(request.method)
         if mssg:
             return mssg, 400
         else:
@@ -59,10 +68,9 @@ def single_state(state_id):
         return {}, 200
 
     elif request.method == 'PUT':
-        if not request.is_json:
-            return "Not a JSON", 400
-        elif not request.get_json():
-            return "Not a JSON", 400
+        mssg = bodyChecker(request.method)
+        if mssg:
+            return mssg, 400
         else:
             obj = objs.get(key)
             for key, value in request.get_json().items():
