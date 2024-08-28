@@ -7,7 +7,7 @@ from models import storage
 from flask import abort, request
 
 
-@app_views.route('/states/<state_id>/cities', methods=['GET'])
+@app_views.route('/states/<state_id>/cities', methods=['GET', 'POST'])
 def get_cities(state_id):
     """Routing method to get all cities of a state by its id"""
 
@@ -15,6 +15,17 @@ def get_cities(state_id):
 
     if key not in storage.all(State):
         abort(404)
+    if request.method == 'POST':
+        mssg = bodyChecker(request.method)
+        if mssg:
+            return mssg, 400
+        else:
+            city = City()
+            setattr(city, 'state_id', state_id)
+            for key, value in request.get_json().items():
+                setattr(city, key, value)
+            city.save()
+            return city.to_dict(), 201
     else:
         state = storage.get(State, state_id)
         objsList = [city.to_dict() for city in state.cities]
