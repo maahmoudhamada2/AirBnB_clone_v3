@@ -7,7 +7,10 @@ from models import storage
 from flask import abort, request
 
 
-@app_views.route('/states/<state_id>/cities', methods=['GET', 'POST'])
+@app_views.route(
+    '/states/<state_id>/cities',
+    strict_slashes=False,
+    methods=['GET', 'POST'])
 def get_cities(state_id):
     """Routing method to get all cities of a state by its id"""
 
