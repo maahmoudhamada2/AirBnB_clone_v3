@@ -8,11 +8,41 @@ from flask import jsonify, abort, request
 # -------------------------------------------------------------------------
 
 
-@app_views.route('/users', strict_slashes=False, methods=['GET'])
+def advBodyChecker():
+    if not request.is_json:
+        return "Not a JSON"
+    elif not request.get_json():
+        return "Not a JSON"
+    elif 'email' not in request.get_json():
+        return "Missing email"
+    elif 'password' not in request.get_json():
+        return "Missing password"
+    else:
+        return None
+
+
+# -------------------------------------------------------------------------
+
+
+@app_views.route('/users', strict_slashes=False, methods=['GET', 'POST'])
 def get_users():
     """Routing method to get users list"""
-    usersList = [user.to_dict() for user in storage.all(User).values()]
-    return jsonify(usersList)
+    if request.method == 'POST':
+        mssg = advBodyChecker()
+        if mssg:
+            return mssg, 400
+        else:
+            user = User()
+            for key, value in request.get_json().items():
+                setattr(user, key, value)
+            user.save()
+            return jsonify(user.to_dict()), 201
+    else:
+        usersList = [user.to_dict() for user in storage.all(User).values()]
+        return jsonify(usersList)
+
+
+# -------------------------------------------------------------------------
 
 
 @app_views.route(
@@ -32,3 +62,6 @@ def get_user(user_id):
     else:
         user = storage.get(User, user_id)
         return jsonify(user.to_dict())
+
+
+# -------------------------------------------------------------------------
