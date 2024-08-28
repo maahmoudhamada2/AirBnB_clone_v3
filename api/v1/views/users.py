@@ -48,10 +48,11 @@ def get_users():
 @app_views.route(
     '/users/<user_id>',
     strict_slashes=False,
-    methods=['GET', 'DELETE'])
+    methods=['GET', 'DELETE', 'PUT'])
 def get_user(user_id):
     """Routing method to get a user by id"""
     key = "{}.{}".format(User.__name__, user_id)
+    skipKeys = ['id', 'email', 'created_at', 'updated_at']
     if key not in storage.all(User):
         abort(404)
     elif request.method == 'DELETE':
@@ -59,6 +60,19 @@ def get_user(user_id):
         storage.delete(user)
         storage.save()
         return jsonify({}), 200
+    elif request.method == 'PUT':
+        mssg = bodyChecker(request.method)
+        if mssg:
+            return mssg, 400
+        else:
+            user = storage.get(User, user_id)
+            for key, value in request.get_json().items():
+                if key in skipKeys:
+                    continue
+                else:
+                    setattr(user, key, value)
+            user.save()
+            return jsonify(user.to_dict()), 200
     else:
         user = storage.get(User, user_id)
         return jsonify(user.to_dict())
