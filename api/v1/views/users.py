@@ -15,12 +15,20 @@ def get_users():
     return jsonify(usersList)
 
 
-@app_views.route('/users/<user_id>', strict_slashes=False, methods=['GET'])
+@app_views.route(
+    '/users/<user_id>',
+    strict_slashes=False,
+    methods=['GET', 'DELETE'])
 def get_user(user_id):
     """Routing method to get a user by id"""
     key = "{}.{}".format(User.__name__, user_id)
     if key not in storage.all(User):
         abort(404)
+    elif request.method == 'DELETE':
+        user = storage.get(User, user_id)
+        storage.delete(user)
+        storage.save()
+        return jsonify({}), 200
     else:
         user = storage.get(User, user_id)
         return jsonify(user.to_dict())
