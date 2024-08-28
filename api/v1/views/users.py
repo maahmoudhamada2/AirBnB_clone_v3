@@ -2,7 +2,7 @@
 """User routing module"""
 from models.user import User
 from models import storage
-from api.v1.views import app_views
+from api.v1.views import app_views, bodyChecker
 from flask import jsonify, abort, request
 
 # -------------------------------------------------------------------------
@@ -30,7 +30,7 @@ def get_users():
     if request.method == 'POST':
         mssg = advBodyChecker()
         if mssg:
-            return mssg, 400
+            return jsonify(mssg), 400
         else:
             user = User()
             for key, value in request.get_json().items():
@@ -51,8 +51,10 @@ def get_users():
     methods=['GET', 'DELETE', 'PUT'])
 def get_user(user_id):
     """Routing method to get a user by id"""
+
     key = "{}.{}".format(User.__name__, user_id)
     skipKeys = ['id', 'email', 'created_at', 'updated_at']
+
     if key not in storage.all(User):
         abort(404)
     elif request.method == 'DELETE':
@@ -63,7 +65,7 @@ def get_user(user_id):
     elif request.method == 'PUT':
         mssg = bodyChecker(request.method)
         if mssg:
-            return mssg, 400
+            return jsonify(mssg), 400
         else:
             user = storage.get(User, user_id)
             for key, value in request.get_json().items():
