@@ -7,6 +7,9 @@ from models import storage
 from flask import abort, request
 
 
+# --------------------------------------------------------------------------------------------
+
+
 @app_views.route(
     '/states/<state_id>/cities',
     strict_slashes=False,
@@ -33,6 +36,9 @@ def get_cities(state_id):
         state = storage.get(State, state_id)
         objsList = [city.to_dict() for city in state.cities]
         return objsList
+
+
+# --------------------------------------------------------------------------------------------
 
 
 @app_views.route('/cities/<city_id>', methods=['GET', 'DELETE', 'PUT'])
